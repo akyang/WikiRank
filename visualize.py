@@ -5,15 +5,14 @@ import plotly.graph_objs as go
 import WikiUtils
 
 city = "Berkeley, California"
-scale = 5
 color = "rgb(255, 0, 0)"
 num_visits = [500, 1000, 5000]
-num_topics = [500, 1000, 5000]
+scales = [1, 2, 4]
 
-def bubble_plot(filename, v, t):
+def bubble_plot(filename, v, t, scale=1):
     base_lat, base_lon = WikiUtils.get_coordinates(city)
 
-    data = get_data(filename)
+    data = get_data(filename, scale)
     layout = go.Layout(
                 title="{0} {1},{2}".format(city, v, t),
                 geo=dict(
@@ -46,9 +45,9 @@ def bubble_plot(filename, v, t):
 
     figure = {'data': data, 'layout': layout}
     filename = filename[14:-4]
-    plotly.offline.plot(figure, filename='plots/'+filename+'.html', image='png', image_filename=filename, auto_open=True)
+    plotly.offline.plot(figure, filename='plots/'+filename+'.html', auto_open=True)
 
-def get_data(filename):
+def get_data(filename, scale):
     lons = []
     lats = []
     text = []
@@ -91,8 +90,8 @@ if __name__ == "__main__":
         filename = "data/PageRank/{0}_{1}_{2}.csv".format(city.replace(' ', ''), v, t)
         bubble_plot(filename, v, t)
     else:
-        for v in num_visits:
-            for t in num_topics:
-                filename = "data/PageRank/{0}_{1}_{2}.csv".format(city.replace(' ', ''), v, t)
-                bubble_plot(filename, v, t)
+        for i in range(len(num_visits)):
+            v = num_visits[i]
+            filename = "data/PageRank/{0}_{1}_{2}.csv".format(city.replace(' ', ''), v, 500)
+            bubble_plot(filename, v, 500, scales[i])
 
