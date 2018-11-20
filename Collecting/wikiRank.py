@@ -3,9 +3,9 @@ import requests
 import random
 import csv
 
-CITY = "San Francisco"
-NUM_VISITS_1 = 5000
-NUM_VISITS_2 = 5000
+CITY = "New York City"
+NUM_VISITS_1 = 100
+NUM_VISITS_2 = 100
 
 wiki_wiki = wikipediaapi.Wikipedia('en')
 
@@ -65,7 +65,12 @@ def getLinks(city):
 	page = wiki_wiki.page(city)
 	return sorted(page.links.keys())
 
+
+# BEGIN PHASE 1
+
 locations = getLocations(CITY)
+if CITY in locations:
+	locations.remove(CITY)
 visits = {}
 for location in locations:
 	visits[location] = 0
@@ -87,7 +92,11 @@ with open(locationsFileName, mode='w') as location_file:
 	for key in sortedLocationKeys:
 		location_writer.writerow([key, str(visits[key])])
 
+# END PHASE 1
 
+
+
+# BEGIN PHASE 2
 
 weightedLocations = []
 
@@ -101,7 +110,7 @@ for i in range(NUM_VISITS_2):
 	print('Phase 2: ' + str(i))
 	location = random.choice(weightedLocations)
 	links = getLinks(location)
-	nonlocationLinks = [l for l in links if l not in visits]
+	nonlocationLinks = [l for l in links if l not in visits and ':' not in l and l != CITY]
 	if len(nonlocationLinks) > 0:
 		visit = random.choice(nonlocationLinks)
 		if visit in topicVisits:
@@ -116,3 +125,6 @@ with open(topicsFileName, mode='w') as topic_file:
 	topic_writer = csv.writer(topic_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 	for key in sortedTopicKeys:
 		topic_writer.writerow([key, str(topicVisits[key])])
+
+# END PHASE 2
+
