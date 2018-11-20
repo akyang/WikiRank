@@ -1,0 +1,2 @@
+numpy==1.15.4
+wikipedia-api==0.3.7
