@@ -1,11 +1,12 @@
+import sys
 import random
 import csv
 import WikiUtils
 import time
 
-cities = ["New York City", "San Francisco", "San Diego", "London"]
-num_visits = [500, 1000, 10000]
-num_topics = [500, 1000, 10000]
+city = "Berkeley, California"
+num_visits = [500, 1000, 5000]
+num_topics = [500, 1000, 5000]
 
 def crawl(city, n):
     locations = WikiUtils.getLocations(city)
@@ -38,6 +39,7 @@ def rank_topics(visits, n):
         location = random.choice(weightedLocations)
         links = WikiUtils.getLinks(location)
         nonlocationLinks = [l for l in links if l not in visits and ':' not in l and l != city]
+        nonlocationLinks.remove("Geographic coordinate system")
         if len(nonlocationLinks) > 0:
             visit = random.choice(nonlocationLinks)
             if visit in topicVisits:
@@ -50,20 +52,30 @@ def rank_topics(visits, n):
 
 def to_csv(data, city, num_visits, num_topics, phase):
     sortedLocationKeys = sorted(data, key=data.get, reverse=True)
-    locationsFileName = 'data/{0}/location_rankings_{1}_{2}_{3}.csv'.format(phase, city.replace(' ', ''), num_visits, num_topics)
+    locationsFileName = 'data/{0}/{1}_{2}_{3}.csv'.format(phase, city.replace(' ', ''), num_visits, num_topics)
     with open(locationsFileName, mode='w') as location_file:
         location_writer = csv.writer(location_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         for key in sortedLocationKeys:
             location_writer.writerow([key, str(data[key])])
 
-for city in cities:
-    for v in num_visits:
-        for t in num_topics:
-            print("Starting {0} {1} {2}...".format(city, v, t))
-            visits = crawl(city, v)
-            to_csv(visits, city, v, t, "PageRank")
-            topic_visits = rank_topics(visits, t)
-            to_csv(topic_visits, city, v, t, "Topics")
-            print("Finished {0} {1} {2}.\n".format(city, v, t))
-            
+def run(city, v, t):
+    t1 = time.time()
+    print("Starting {0} {1} {2}...".format(city, v, t))
+    visits = crawl(city, v)
+    to_csv(visits, city, v, t, "PageRank")
+    topic_visits = rank_topics(visits, t)
+    to_csv(topic_visits, city, v, t, "Topics")
+    print("Finished {0} {1} {2}.".format(city, v, t))
+    t2 = time.time()
+    print("TOTAL TIME: {} seconds\n".format(t2 - t1))
 
+if __name__ == "__main__":
+    args = sys.argv
+    if len(args) == 3:
+        v = int(args[1])
+        t = int(args[2])
+        run(city, v, t)
+    else:
+        for v in num_visits:
+            for t in num_topics:
+                run(city, v, t)
